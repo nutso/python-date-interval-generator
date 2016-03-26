@@ -111,7 +111,29 @@ class IntervalsTest(TestCase):
 class IntervalGeneratorTest(TestCase):
     """ Testing all things related to the intervalgenerator class"""
 
-    def assert_for_results(self, results, expected_results, description):
+    tested_combinations = {}
+
+    def assert_for_results(self, results, expected_results, interval, description):
+        """
+        Centralizing testing of a given intervalgenerator result set and the expected results.
+        Asserts that the results and expected results are of the same length, and that both
+        the order of results and the content of results are equal.
+
+        Parameters
+        ----------
+        results: list<IntervalResult>
+            actual results
+        expected_results: list<IntervalResult>
+            expected results
+        description: string
+            description to include with the assert statement in case of failures.
+            Should relate to the expected descriptions in tested_combinations
+            A ": " is appended at the end and additional information may be provided.
+        """
+        if(interval not in self.tested_combinations):
+            self.tested_combinations[interval.value] = []
+        self.tested_combinations[interval.value].append(description)
+
         description = description + ": "
         pp = pprint.PrettyPrinter(indent=3)
 
@@ -120,11 +142,12 @@ class IntervalGeneratorTest(TestCase):
         for i, value in enumerate(results):
             self.assertEqual(value, expected_results[i], description + "Result at index " + str(i) + " are not equal. \n\nResults: \n" + pp.pformat(results) + "\n\nExpected Results: \n" + pp.pformat(expected_results))
 
-
     def test_intervals_yearly(self):
-        begin_date = date(2011, 01, 01)
-        end_date = date(2015, 12, 31)
+        """
+        Testing intervalgenerator for various intervals.YEAR configurations.
+        """
 
+        results = intervalgenerator(date(2011, 01, 01), date(2015, 12, 31), intervals.YEAR, is_fixed=False)
         expected_results = [
             IntervalResult(begin_date=date(2011, 1, 1), end_date=date(2011, 12, 31), is_partial=False),
             IntervalResult(begin_date=date(2012, 1, 1), end_date=date(2012, 12, 31), is_partial=False),
@@ -132,9 +155,35 @@ class IntervalGeneratorTest(TestCase):
             IntervalResult(begin_date=date(2014, 1, 1), end_date=date(2014, 12, 31), is_partial=False),
             IntervalResult(begin_date=date(2015, 1, 1), end_date=date(2015, 12, 31), is_partial=False),
         ]
+        self.assert_for_results(results, expected_results, intervals.YEAR, "relative/complete/1")
 
-        results = intervalgenerator(begin_date, end_date, intervals.YEAR, is_fixed=False)
+    @classmethod
+    def tearDownClass(self):
+        # for each interval type, test: is_fixed=True/False; with partials/without partials; interval_count default and > 1
 
-        self.assert_for_results(results, expected_results, "1 x Yearly - Relative -No Partial")
+        expected_strings = [
+            # is_fixed = False, no partials present, interval_count=1
+            "relative/complete/1",
+            # is_fixed = True, no partials present, interval_count=1
+            "fixed/complete/1",
+            # is_fixed = False, partials present, interval_count=1
+            "relative/partial/1",
+            # is_fixed = True, partials present, interval_count=1
+            "fixed/partial/1",
+            # is_fixed = False, no partials present, interval_count=n
+            "relative/complete/n",
+            # is_fixed = True, no partials present, interval_count=n
+            "fixed/complete/n",
+            # is_fixed = False, partials present, interval_count=n
+            "relative/partial/n",
+            # is_fixed = True, partials present, interval_count=n
+            "fixed/partial/n",
+        ]
+        for i in intervals:
+            i = i.value
 
-        # TODO implement @test
+            # make sure each interval type is tested @test
+            assert (i in self.tested_combinations), str(intervals(i)) + " not tested."
+
+            for e in expected_strings:
+                assert (e in self.tested_combinations[i]), e + " not tested"
