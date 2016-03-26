@@ -1,4 +1,4 @@
-# python-date-interval-generator
+# Python Date Interval Generator
 Generate a set of date ranges
 
 ## Release Notes
