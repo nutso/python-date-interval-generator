@@ -28,11 +28,40 @@ class IntervalResult(dict):
     Subclass of dict makes it JSON serializable via json.dumps()
     """
 
+    def set_date_range(self, begin_date, end_date):
+        """ Shortcut to set the begin date and end date at the same time, so you don't have to None out one if it's changing """
+        if(end_date is None):
+            self['end_date'] = end_date
+        if(begin_date is None):
+            self['begin_date'] = begin_date
+
+        if(end_date is not None and begin_date is not None):
+            # faking a comparator since date and datetime objects are not comparable apparently
+            error_msg = "begin_date (" + str(begin_date) + ") must come before or on end_date (" + str(end_date) + ") if both begin_date and end_date are set. "
+            if(begin_date.year > end_date.year):
+                raise ValueError(_(error_msg))
+
+            if(begin_date.year == end_date.year):
+                if(begin_date.month > end_date.month):
+                    raise ValueError(_(error_msg))
+
+                if(begin_date.month == end_date.month and begin_date.day > end_date.day):
+                    raise ValueError(_(error_msg))
+
+        # we don't care about times ... at least not yet
+
+        # either one is None
+        if begin_date:
+            self['begin_date'] = time.mktime(begin_date.timetuple())
+        if end_date:
+            self['end_date'] = time.mktime(end_date.timetuple())
+
     @property
     def begin_date(self):
         """
         Get the interval begin date. Always of type datetime (even if it was set to a date)
         """
+        if 'begin_date' not in self or not self['begin_date']: return None
         return datetime.fromtimestamp(self['begin_date'])
     @begin_date.setter
     def begin_date(self, begin_date):
@@ -41,22 +70,23 @@ class IntervalResult(dict):
         """
         if(not isinstance(begin_date, (date, datetime))):
             raise TypeError(_("begin_date must be of type date or datetime"))
-        self['begin_date'] = time.mktime(begin_date.timetuple())
+        self.set_date_range(begin_date, self.end_date)
 
     @property
     def end_date(self):
         """
         Get the interval end date. Always of type datetime (even if it was set to a date)
         """
+        if 'end_date' not in self or not self['end_date']: return None
         return datetime.fromtimestamp(self['end_date'])
     @end_date.setter
     def end_date(self, end_date):
         if(not isinstance(end_date, (date, datetime))):
             raise TypeError(_("end_date must be of type date or datetime"))
-        self['end_date'] = time.mktime(end_date.timetuple())
-
+        self.set_date_range(self.begin_date, end_date)
     @property
     def interval(self):
+        if not self['interval']: return None
         return intervals(self['interval'])
     @interval.setter
     def interval(self, interval):

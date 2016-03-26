@@ -53,7 +53,38 @@ class IntervalResultTest(TestCase):
         except Exception as e: self.fail("Could not set is_fixed to an bool object. " + str(e))
         self.assertEqual(type(res.is_fixed), bool, "is_fixed is not of type bool. " + str(type(res.is_fixed)))
 
-    # TODO test that begin_date is always <= end_date @test
+    def test_valid_date_range(self):
+        res = IntervalResult()
+
+        # valid ranges
+        try: res.set_date_range(date(2015, 1, 4), date(2015, 1, 4))
+        except Exception as e: self.fail("Valid date range is invalid (same day). " + str(e))
+
+        try: res.set_date_range(date(2015, 1, 4), date(2015, 1, 30))
+        except Exception as e: self.fail("Valid date range is invalid (days in same month). " + str(e))
+
+        try: res.set_date_range(date(2015, 1, 4), date(2015, 2, 4))
+        except Exception as e: self.fail("Valid date range is invalid (months in same year). " + str(e))
+
+        try: res.set_date_range(date(2014, 1, 4), date(2015, 2, 4))
+        except Exception as e: self.fail("Valid date range is invalid (separate years). " + str(e))
+
+        try: res.set_date_range(date(2015, 1, 4), datetime(2015, 1, 4, 5, 6, 7))
+        except Exception as e: self.fail("Valid date range is invalid (date/datetime). " + str(e))
+
+        try: res.set_date_range(None, datetime(2015, 1, 4, 5, 6, 7))
+        except Exception as e: self.fail("Valid date range is invalid (None begin_date). " + str(e))
+
+        try: res.set_date_range(date(2015, 1, 4), None)
+        except Exception as e: self.fail("Valid date range is invalid (None end_date). " + str(e))
+
+        try: res.set_date_range(None, None)
+        except Exception as e: self.fail("Valid date range is invalid (None range). " + str(e))
+
+        # invalid ranges
+        with self.assertRaises(ValueError): res.set_date_range(date(2015, 2, 5), date(2010, 5, 3)) # years are wrong
+        with self.assertRaises(ValueError): res.set_date_range(date(2015, 6, 5), date(2015, 5, 3)) # months are wrong
+        with self.assertRaises(ValueError): res.set_date_range(date(2015, 5, 5), date(2015, 5, 3)) # days are wrong
 
     def test_intervaleresult_getters_and_setters(self):
         res = IntervalResult()
