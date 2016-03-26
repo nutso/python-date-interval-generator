@@ -9,15 +9,13 @@ class IntervalResultTest(TestCase):
     def setUp(self):
         self.interval_begin_date = date(2016, 4, 2)
         self.interval_end_date = date(2016, 5, 2)
-        self.interval_interval = intervals.YEAR
-        self.interval_is_fixed = False
+        self.interval_is_partial = False
 
     def test_intervalresult_serializable(self):
         res = IntervalResult()
         res.begin_date = self.interval_begin_date
         res.end_date = self.interval_end_date
-        res.interval = self.interval_interval
-        res.is_fixed = self.interval_is_fixed
+        res.is_partial = self.interval_is_partial
 
         try: json.dumps(res)
         except Exception as e: self.fail("Could not JSON-serialize IntervalResult. " + str(e))
@@ -41,17 +39,11 @@ class IntervalResultTest(TestCase):
         except Exception as e: self.fail("Could not set end_date to a datetime object. " + str(e))
         self.assertEqual(type(res.end_date), datetime, "end_date is not of type datetime. " + str(type(res.end_date)))
 
-        # interval
-        with self.assertRaises(TypeError): res.interval = 4
-        try: res.interval = self.interval_interval
-        except Exception as e: self.fail("Could not set interval to an intervals object. " + str(e))
-        self.assertEqual(type(res.interval), intervals, "interval is not of type intervals. " + str(type(res.interval)))
-
-        # is_fixed
-        with self.assertRaises(TypeError): res.is_fixed = 4.32
-        try: res.is_fixed = self.interval_is_fixed
-        except Exception as e: self.fail("Could not set is_fixed to an bool object. " + str(e))
-        self.assertEqual(type(res.is_fixed), bool, "is_fixed is not of type bool. " + str(type(res.is_fixed)))
+        # is_partial
+        with self.assertRaises(TypeError): res.is_partial = 4.32
+        try: res.is_partial = self.interval_is_partial
+        except Exception as e: self.fail("Could not set is_partial to an bool object. " + str(e))
+        self.assertEqual(type(res.is_partial), bool, "is_partial is not of type bool. " + str(type(res.is_partial)))
 
     def test_valid_date_range(self):
         res = IntervalResult()
@@ -90,14 +82,11 @@ class IntervalResultTest(TestCase):
         res = IntervalResult()
         res.begin_date = self.interval_begin_date
         res.end_date = self.interval_end_date
-        res.interval = self.interval_interval
-        res.is_fixed = self.interval_is_fixed
+        res.is_partial = self.interval_is_partial
 
         self.assertEqual(res.begin_date, datetime.combine(self.interval_begin_date, datetime.min.time()), "begin_date is not what it was set to. " + str(res.begin_date))
         self.assertEqual(res.end_date, datetime.combine(self.interval_end_date, datetime.min.time()), "end_date is not what it was set to. " + str(res.end_date))
-        self.assertEqual(res.interval, self.interval_interval, "interval is not what it was set to. " + str(res.interval))
-        self.assertEqual(res.is_fixed, self.interval_is_fixed, "is_fixed is not what it was set to. " + str(res.is_fixed))
-
+        self.assertEqual(res.is_partial, self.interval_is_partial, "is_partial is not what it was set to. " + str(res.is_partial))
 
         with self.assertRaises(AttributeError):
             # setter

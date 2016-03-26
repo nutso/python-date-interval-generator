@@ -6,7 +6,7 @@ except ImportError:
 
 from dateutil.rrule import * # TODO only what we need ...
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import time
 
 # TODO placeholder so we can prepare to localize strings until we actually localize strings
@@ -16,12 +16,23 @@ import time
 def _(message): return message
 
 class intervals(Enum):
-    # TODO comments
     YEAR = 'y'
+    """ Yearly """
+
     MONTH = 'm'
+    """ Monthly """
+
     DAY = 'd'
+    """ Daily """
+
     QUARTER = 'q'
+    """ Quarterly (4 times per year/equivalend to three months) """
+
     WEEK = 'w'
+    """ Weekly """
+
+    PART = 'p'
+    """ A specific number of parts - e.g. running daily for 7 days is equivalent to asking for 7 parts for the same range """
 
 class IntervalResult(dict):
     """
@@ -99,23 +110,13 @@ class IntervalResult(dict):
             raise TypeError(_("end_date must be of type date or datetime"))
         self.set_date_range(self.begin_date, end_date)
     @property
-    def interval(self):
-        if not self['interval']: return None
-        return intervals(self['interval'])
-    @interval.setter
-    def interval(self, interval):
-        if(not isinstance(interval, intervals)):
-            raise TypeError(_("interval must be of type intervals"))
-        self['interval'] = interval.value
-
-    @property
-    def is_fixed(self):
-        return self['is_fixed']
-    @is_fixed.setter
-    def is_fixed(self, is_fixed):
-        if(not isinstance(is_fixed, bool)):
-            raise TypeError(_("is_fixed must be of type bool"))
-        self['is_fixed'] = is_fixed
+    def is_partial(self):
+        return self['is_partial']
+    @is_partial.setter
+    def is_partial(self, is_partial):
+        if(not isinstance(is_partial, bool)):
+            raise TypeError(_("is_partial must be of type bool"))
+        self['is_partial'] = is_partial
 
 def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed=False):
     """
@@ -145,12 +146,65 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
 
     Returns
     -------
-    List of IntervalResult objects
+    Sequentially-ordered list of IntervalResult objects
     """
 
-    # begin_date, end_date, interval, interval_count=1, is_fixed=False
+    # used to normalize and validate the requested range
+    overall_interval = IntervalResult()
+    overall_interval.begin_date = begin_date
+    overall_interval.end_date = end_date
+    # TODO is_partial = False
 
-    # TODO if interval not in (supported) intervals, raise NotImplementedError
+    rrule_param = None
 
+    if(interval == intervals.YEAR):
+        rrule_param = YEARLY
 
-    return []
+    if(interval == intervals.DAY):
+        rrule_param = DAILY
+
+    if(interval == intervals.MONTH):
+        rrule_param = MONTHLY
+
+    if(interval == intervals.PART):
+        # have to calculate the length of each part
+        # TODO make sure that time parts are ignored in the comparison
+        total_days = (overall_interval.end_date - overall_interval.begin_date).days
+        new_interval_count = total_days * 1.0 / interval_count
+        if(new_interval_count >= 1): # no partial days
+            # convert it into a DAILY rrule
+            rrule_param = DAILY
+            interval_count = int(new_interval_count) # TODO make sure it rounds down ... floor maybe?
+
+    if(interval == intervals.QUARTER):
+        # convert it into months
+        rrule_param = DAILY
+        interval_count = interval_count * 3
+
+    if(interval == intervals.WEEK):
+        rrule_param = WEEKLY
+
+    if(rrule_param is None):
+        # interval not in supported intervals
+        raise NotImplementedError
+
+    # TODO confirm that 'until' is inclusive
+    # TODO this is only if not is_fixed
+    interval_begin_dates = list(rrule(rrule_param, interval=interval_count, dtstart=begin_date, until=end_date))
+
+    return_results = []
+    for i, i_begin_date in enumerate(interval_begin_dates):
+        new_interval = IntervalResult()
+        new_interval.begin_date = i_begin_date
+
+        next_interval_i = i+1
+        if(next_interval_i < len(interval_begin_dates)): # all but the last one
+            new_interval.end_date = (interval_begin_dates[next_interval_i] - timedelta(days=1)) # day before the next interval begins
+            # TODO is_partial = false
+        else:
+            new_interval.end_date = end_date # overall end date
+            # TODO is_partial = maybe ...
+
+        return_results.append(new_interval)
+
+    return return_results
