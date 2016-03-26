@@ -4,7 +4,8 @@ import json
 
 from intervalgenerator.intervals import *
 
-class IntervalTest(TestCase):
+class IntervalResultTest(TestCase):
+    """ Testing all things related to the IntervalResult class """
     def setUp(self):
         self.interval_begin_date = date(2016, 4, 2)
         self.interval_end_date = date(2016, 5, 2)
@@ -52,8 +53,7 @@ class IntervalTest(TestCase):
         except Exception as e: self.fail("Could not set is_fixed to an bool object. " + str(e))
         self.assertEqual(type(res.is_fixed), bool, "is_fixed is not of type bool. " + str(type(res.is_fixed)))
 
-
-        # TODO test that begin_date is always <= end_date
+    # TODO test that begin_date is always <= end_date @test
 
     def test_intervaleresult_getters_and_setters(self):
         res = IntervalResult()
@@ -68,6 +68,8 @@ class IntervalTest(TestCase):
         self.assertEqual(res.is_fixed, self.interval_is_fixed, "is_fixed is not what it was set to. " + str(res.is_fixed))
 
 
+class IntervalsTest(TestCase):
+    """ Testing all things related to the intervals class """
     def test_intervals_all_implemented(self):
         begin_date = date(2016, 01, 01)
         end_date = date(2016, 02, 29)
@@ -78,6 +80,8 @@ class IntervalTest(TestCase):
             except NotImplementedError:
                 self.fail("intervalgenerator does not implement interval " + i.name)
 
+class IntervalGeneratorTest(TestCase):
+    """ Testing all things related to the intervalgenerator class"""
     def test_intervals_yearly(self):
         begin_date = date(2011, 01, 01)
         end_date = date(2015, 12, 31)
