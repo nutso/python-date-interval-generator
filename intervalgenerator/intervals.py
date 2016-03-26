@@ -39,6 +39,14 @@ class IntervalResult(dict):
     Subclass of dict makes it JSON serializable via json.dumps()
     """
 
+    def __init__(self, begin_date=None, end_date=None, is_partial=None):
+        super(type(self), self).__init__()
+
+        self.begin_date = begin_date
+        self.end_date = end_date
+        self.is_partial = is_partial
+
+
     def __my_properties(self):
         """ Gets a list of @property-defined properties for the current class only (no super) """
         return [k for k,v in self.__class__.__dict__.items() if type(v) is property]
@@ -93,7 +101,7 @@ class IntervalResult(dict):
         """
         Set the interval begin date to either a date or a datetime.
         """
-        if(not isinstance(begin_date, (date, datetime))):
+        if(not isinstance(begin_date, (date, datetime, type(None)))):
             raise TypeError(_("begin_date must be of type date or datetime"))
         self.set_date_range(begin_date, self.end_date)
 
@@ -106,7 +114,7 @@ class IntervalResult(dict):
         return datetime.fromtimestamp(self['end_date'])
     @end_date.setter
     def end_date(self, end_date):
-        if(not isinstance(end_date, (date, datetime))):
+        if(not isinstance(end_date, (date, datetime, type(None)))):
             raise TypeError(_("end_date must be of type date or datetime"))
         self.set_date_range(self.begin_date, end_date)
     @property
@@ -114,7 +122,7 @@ class IntervalResult(dict):
         return self['is_partial']
     @is_partial.setter
     def is_partial(self, is_partial):
-        if(not isinstance(is_partial, bool)):
+        if(not isinstance(is_partial, (bool, type(None)))):
             raise TypeError(_("is_partial must be of type bool"))
         self['is_partial'] = is_partial
 
