@@ -99,6 +99,13 @@ class IntervalResultTest(TestCase):
         self.assertEqual(res.is_fixed, self.interval_is_fixed, "is_fixed is not what it was set to. " + str(res.is_fixed))
 
 
+        with self.assertRaises(AttributeError):
+            # setter
+            res['invalid_key'] = "hello"
+        with self.assertRaises(AttributeError):
+            # getter
+            print res['invalid_key']
+
 class IntervalsTest(TestCase):
     """ Testing all things related to the intervals class """
     def test_intervals_all_implemented(self):

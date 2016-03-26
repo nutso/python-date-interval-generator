@@ -28,6 +28,20 @@ class IntervalResult(dict):
     Subclass of dict makes it JSON serializable via json.dumps()
     """
 
+    def __my_properties(self):
+        """ Gets a list of @property-defined properties for the current class only (no super) """
+        return [k for k,v in self.__class__.__dict__.items() if type(v) is property]
+
+    def __getitem__(self, key):
+        if(key not in self.__my_properties()):
+            raise AttributeError("No attribute '" + str(key) + "'")
+        return super(type(self), self).__getitem__(key)
+
+    def __setitem__(self, key, value):
+        if(key not in self.__my_properties()):
+            raise AttributeError("No attribute '" + str(key) + "'")
+        super(type(self), self).__setitem__(key, value)
+
     def set_date_range(self, begin_date, end_date):
         """ Shortcut to set the begin date and end date at the same time, so you don't have to None out one if it's changing """
         if(end_date is None):
