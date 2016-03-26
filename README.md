@@ -6,3 +6,7 @@ Generate a set of date ranges
 ### In Work
 
 * Everything!
+
+## Tests
+
+python -m unittest discover -v tests
