@@ -1,6 +1,7 @@
 from unittest import TestCase
 from datetime import date, datetime
 import json
+import pprint
 
 from intervalgenerator.intervals import *
 
@@ -109,10 +110,31 @@ class IntervalsTest(TestCase):
 
 class IntervalGeneratorTest(TestCase):
     """ Testing all things related to the intervalgenerator class"""
+
+    def assert_for_results(self, results, expected_results, description):
+        description = description + ": "
+        pp = pprint.PrettyPrinter(indent=3)
+
+        self.assertEqual(len(results), len(expected_results), description + "Results are not of equal length")
+
+        for i, value in enumerate(results):
+            self.assertEqual(value, expected_results[i], description + "Result at index " + str(i) + " are not equal. \n\nResults: \n" + pp.pformat(results) + "\n\nExpected Results: \n" + pp.pformat(expected_results))
+
+
     def test_intervals_yearly(self):
         begin_date = date(2011, 01, 01)
         end_date = date(2015, 12, 31)
 
-        results = intervalgenerator(begin_date, end_date, intervals.YEAR)
+        expected_results = [
+            IntervalResult(begin_date=date(2011, 1, 1), end_date=date(2011, 12, 31), is_partial=False),
+            IntervalResult(begin_date=date(2012, 1, 1), end_date=date(2012, 12, 31), is_partial=False),
+            IntervalResult(begin_date=date(2013, 1, 1), end_date=date(2013, 12, 31), is_partial=False),
+            IntervalResult(begin_date=date(2014, 1, 1), end_date=date(2014, 12, 31), is_partial=False),
+            IntervalResult(begin_date=date(2015, 1, 1), end_date=date(2015, 12, 31), is_partial=False),
+        ]
+
+        results = intervalgenerator(begin_date, end_date, intervals.YEAR, is_fixed=False)
+
+        self.assert_for_results(results, expected_results, "1 x Yearly - Relative -No Partial")
 
         # TODO implement @test

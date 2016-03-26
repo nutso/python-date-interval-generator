@@ -208,10 +208,18 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
         next_interval_i = i+1
         if(next_interval_i < len(interval_begin_dates)): # all but the last one
             new_interval.end_date = (interval_begin_dates[next_interval_i] - timedelta(days=1)) # day before the next interval begins
-            # TODO is_partial = false
+            new_interval.is_partial = False
         else:
             new_interval.end_date = end_date # overall end date
-            # TODO is_partial = maybe ...
+
+            if(len(return_results) == 0):
+                # this will be the first and only - we'll just say it's not partial ... # TODO document this decision
+                new_interval.is_partial = False
+            else:
+                # get length of most recent result
+                interval_length_days = (return_results[-1].end_date - return_results[-1].begin_date).days
+                my_length_days = (new_interval.end_date - new_interval.begin_date).days
+                new_interval.is_partial = (my_length_days != interval_length_days)
 
         return_results.append(new_interval)
 
