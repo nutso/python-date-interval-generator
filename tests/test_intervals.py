@@ -143,10 +143,12 @@ class IntervalGeneratorTest(TestCase):
         if(results is None or expected_results is None):
             self.fail("One value is none but not the other. ")
 
-        self.assertEqual(len(results), len(expected_results), description + "Results are not of equal length")
+        results_suffix_string =  "\n\nResults: \n" + pp.pformat(results) + "\n\nExpected Results: \n" + pp.pformat(expected_results)
+
+        self.assertEqual(len(results), len(expected_results), description + "Results are not of equal length." + results_suffix_string)
 
         for i, value in enumerate(results):
-            self.assertEqual(value, expected_results[i], description + "Result at index " + str(i) + " are not equal. \n\nResults: \n" + pp.pformat(results) + "\n\nExpected Results: \n" + pp.pformat(expected_results))
+            self.assertEqual(value, expected_results[i], description + "Result at index " + str(i) + " for " + str(interval) +" are not equal." + results_suffix_string)
 
     def test_intervals_yearly(self):
         """
@@ -163,6 +165,51 @@ class IntervalGeneratorTest(TestCase):
             IntervalResult(begin_date=date(2015, 1, 1), end_date=date(2015, 12, 31), is_partial=False),
         ]
         self.assert_for_results(results, expected_results, i, "relative/complete/1")
+
+        # "relative/complete/1",
+        # "fixed/complete/1",
+        # "relative/partial/1",
+        # "fixed/partial/1",
+        # "relative/complete/n",
+        # "fixed/complete/n",
+        # "relative/partial/n",
+        # "fixed/partial/n",
+
+
+    def test_intervals_monthly(self):
+        """
+        Testing intervalgenerator for various intervals.MONTH configurations.
+        """
+        i = intervals.MONTH
+
+        results = intervalgenerator(date(2015, 1, 5), date(2015, 6, 4), i, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2015,1,5), end_date=date(2015,2,4), is_partial=False),
+            IntervalResult(begin_date=date(2015,2,5), end_date=date(2015,3,4), is_partial=False),
+            IntervalResult(begin_date=date(2015,3,5), end_date=date(2015,4,4), is_partial=False),
+            IntervalResult(begin_date=date(2015,4,5), end_date=date(2015,5,4), is_partial=False),
+            IntervalResult(begin_date=date(2015,5,5), end_date=date(2015,6,4), is_partial=False),
+        ]
+        self.assert_for_results(results, expected_results, i, "relative/complete/1")
+
+        results = intervalgenerator(date(2015, 1, 31), date(2015, 6, 4), i, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2015,1,31), end_date=date(2015,2,27), is_partial=False),
+            IntervalResult(begin_date=date(2015,2,28), end_date=date(2015,3,30), is_partial=False),
+            IntervalResult(begin_date=date(2015,3,31), end_date=date(2015,4,29), is_partial=False),
+            IntervalResult(begin_date=date(2015,4,30), end_date=date(2015,5,30), is_partial=False),
+            IntervalResult(begin_date=date(2015,5,31), end_date=date(2015,6,4), is_partial=True),
+        ]
+        self.assert_for_results(results, expected_results, i, "relative/partial/1")
+
+        # "fixed/complete/1",
+        # "relative/partial/1",
+        # "fixed/partial/1",
+        # "relative/complete/n",
+        # "fixed/complete/n",
+        # "relative/partial/n",
+        # "fixed/partial/n",
+
 
     def test_intervals_daily(self):
         """
@@ -220,11 +267,9 @@ class IntervalGeneratorTest(TestCase):
         self.assert_for_results(results, expected_results, i, "singleton/complete/n")
         results = intervalgenerator(date(2015, 1, 5), date(2015, 1, 5), i, interval_count=3, is_fixed=False)
         expected_results = [
-            IntervalResult(begin_date=date(2015,1,5), end_date=date(2015,1,5), is_partial=False),
+            IntervalResult(begin_date=date(2015,1,5), end_date=date(2015,1,5), is_partial=True),
         ]
         self.assert_for_results(results, expected_results, i, "singleton/partial/n")
-
-
 
     @classmethod
     def setUpClass(self):
