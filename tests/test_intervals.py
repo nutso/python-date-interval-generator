@@ -180,10 +180,13 @@ class IntervalGeneratorTest(TestCase):
             IntervalResult(begin_date=date(2015,1,10), end_date=date(2015,1,10), is_partial=False),
         ]
         self.assert_for_results(results, expected_results, i, "relative/complete/1")
+        # There is no concept of 'partial' for a 1-DAY interval
+        self.assert_for_results(None, None, i, "relative/partial/1")
 
         # same expected results -- fixed versus relative does not matter for DAY
         results = intervalgenerator(date(2015, 1, 5), date(2015, 1, 10), i, is_fixed=True)
         self.assert_for_results(results, expected_results, i, "fixed/complete/1")
+        self.assert_for_results(None, None, i, "fixed/partial/1")
 
         results = intervalgenerator(date(2015, 1, 5), date(2015, 1, 16), i, interval_count=3, is_fixed=False)
         expected_results = [
@@ -210,12 +213,16 @@ class IntervalGeneratorTest(TestCase):
         results = intervalgenerator(date(2015, 1, 5), date(2015, 1, 15), i, interval_count=3, is_fixed=True)
         self.assert_for_results(results, expected_results, i, "fixed/partial/n")
 
-
-        # There is no concept of 'partial' for a DAY interval
-        self.assert_for_results(None, None, i, "relative/partial/1")
-        self.assert_for_results(None, None, i, "fixed/partial/1")
-        self.assert_for_results(None, None, i, "relative/partial/n")
-        self.assert_for_results(None, None, i, "fixed/partial/n")
+        results = intervalgenerator(date(2015, 1, 5), date(2015, 1, 7), i, interval_count=3, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2015,1,5), end_date=date(2015,1,7), is_partial=False),
+        ]
+        self.assert_for_results(results, expected_results, i, "singleton/complete/n")
+        results = intervalgenerator(date(2015, 1, 5), date(2015, 1, 5), i, interval_count=3, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2015,1,5), end_date=date(2015,1,5), is_partial=False),
+        ]
+        self.assert_for_results(results, expected_results, i, "singleton/partial/n")
 
 
 
