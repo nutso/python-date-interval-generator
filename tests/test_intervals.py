@@ -145,7 +145,7 @@ class IntervalGeneratorTest(TestCase):
 
         results_suffix_string =  "\n\nResults: \n" + pp.pformat(results) + "\n\nExpected Results: \n" + pp.pformat(expected_results)
 
-        self.assertEqual(len(results), len(expected_results), description + "Results are not of equal length." + results_suffix_string)
+        self.assertEqual(len(results), len(expected_results), description + "Results for " + str(interval) + " are not of equal length." + results_suffix_string)
 
         for i, value in enumerate(results):
             self.assertEqual(value, expected_results[i], description + "Result at index " + str(i) + " for " + str(interval) +" are not equal." + results_suffix_string)
@@ -201,6 +201,15 @@ class IntervalGeneratorTest(TestCase):
             IntervalResult(begin_date=date(2015,5,31), end_date=date(2015,6,4), is_partial=True),
         ]
         self.assert_for_results(results, expected_results, i, "relative/partial/1")
+
+        # TODO document the decision that for begin dates > 28, recurrence is based on relative to end of month, not to actual date
+        results = intervalgenerator(date(2015, 3, 29), date(2015, 6, 4), i, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2015,3,29), end_date=date(2015,4,27), is_partial=False),
+            IntervalResult(begin_date=date(2015,4,28), end_date=date(2015,5,28), is_partial=False),
+            IntervalResult(begin_date=date(2015,5,29), end_date=date(2015,6,4), is_partial=True),
+        ]
+        self.assert_for_results(results, expected_results, i, "relative/partial/1 - 2nd to last day without February")
 
         results = intervalgenerator(date(2015, 1, 1), date(2015, 6, 30), i, is_fixed=True)
         expected_results = [

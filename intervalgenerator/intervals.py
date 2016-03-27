@@ -183,12 +183,14 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
     day_before = begin_date - timedelta(days=1)
 
     rrule_param = None
+    return_results = []
 
     if(interval == intervals.YEAR):
         rrule_param = YEARLY
 
     if(interval == intervals.DAY):
         rrule_param = DAILY
+        # no need to worry about is_fixed - handled the same regardless
 
     if(interval == intervals.PART):
         # have to calculate the length of each part
@@ -200,6 +202,8 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
             rrule_param = DAILY
             interval_count = int(new_interval_count) # TODO make sure it rounds down ... floor maybe?
 
+        # no need to worry about is_fixed - handled the same regardless
+
     if(interval == intervals.QUARTER):
         # convert it into months
         rrule_param = DAILY
@@ -207,16 +211,24 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
 
     if(interval == intervals.WEEK):
         rrule_param = WEEKLY
-
+        # TODO need to know whether weekly starts on Sunday or Monday
 
     if(interval == intervals.MONTH):
         rrule_param = MONTHLY
+        if(is_fixed and begin_date.day > 1):
+            # set the first interval
+            new_interval = IntervalResult()
+            new_interval.begin_date = begin_date
+            new_interval.end_date = last_day_of_month(begin_date)
+            new_interval.is_partial = True
+            return_results.append(new_interval)
+            # reset begin date to beginning of next month and let 'normal' handling take over
+            begin_date = new_interval.end_date + timedelta(days=1)
+
         # have to do a different formulation for monthly - to handle recurrence on e.g. the 31st of the month
         if(begin_date.day > 28): # TODO test with 29th where February is not included @test
             last_day = last_day_of_month(begin_date)
             offset_from_last_day = ((last_day - begin_date).days + 1) * -1 # multiply by negative 1 to tell rrule to go backwards from the last day; add one because -1 means use the last day
-
-            print day_before
 
             interval_begin_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=begin_date, until=end_date, bysetpos=1, bymonthday=(begin_date.day, offset_from_last_day)))
             interval_end_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=day_before, bysetpos=1, bymonthday=(day_before.day, offset_from_last_day - 1), count=(len(interval_begin_dates) + 1)))
@@ -238,7 +250,6 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
         interval_begin_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=begin_date, until=end_date))
         interval_end_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=day_before, count=(len(interval_begin_dates) + 1)))
 
-    return_results = []
     for i, i_begin_date in enumerate(interval_begin_dates):
         new_interval = IntervalResult()
         new_interval.begin_date = i_begin_date
@@ -250,9 +261,12 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
         else:
             new_interval.end_date = end_date # overall end date
 
-            print "(" + str(new_interval.end_date) + ", " + str(interval_end_dates[next_interval_i]) + ") -- " + str(new_interval.end_date != interval_end_dates[next_interval_i])
-            print interval_end_dates
-            new_interval.is_partial = (new_interval.end_date != interval_end_dates[next_interval_i])
+            # print "(" + str(new_interval.end_date) + ", " + str(interval_end_dates[next_interval_i]) + ") -- " + str(new_interval.end_date != interval_end_dates[next_interval_i])
+            # print interval_end_dates
+            if(is_fixed and interval == intervals.MONTH):
+                new_interval.is_partial = (new_interval.end_date != last_day_of_month(new_interval.end_date))
+            else:
+                new_interval.is_partial = (new_interval.end_date != interval_end_dates[next_interval_i])
             """
             if(len(return_results) == 0):
                 # this will be the first and only
