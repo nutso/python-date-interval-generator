@@ -126,6 +126,24 @@ class IntervalResult(dict):
             raise TypeError(_("is_partial must be of type bool"))
         self['is_partial'] = is_partial
 
+def last_day_of_month(any_day):
+    """
+    Given a datetime (or date) object, return the last day in the given month. Handles leap years as well.
+    From http://stackoverflow.com/a/13565185.
+
+    Parameters
+    ----------
+    any_day     datetime or date
+        a date with the month and year for which you want the number of days
+
+    Returns
+    -------
+    the last day of the month as a date or datetime ?
+    """
+    # TODO confirm return type for comment
+    next_month = any_day.replace(day=28) + timedelta(days=4)  # this will never fail
+    return next_month - timedelta(days=next_month.day)
+
 def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed=False):
     """
     Generate a non-overlapping set of date intervals from begin_date to end_date
@@ -174,7 +192,7 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
 
     if(interval == intervals.PART):
         # have to calculate the length of each part
-        # TODO make sure that time parts are ignored in the comparison for is_partial ?
+        # TODO make sure that time parts are ignored in the comparison for total days
         total_days = (overall_interval.end_date - overall_interval.begin_date).days
         new_interval_count = total_days * 1.0 / interval_count
         if(new_interval_count >= 1): # no partial days
@@ -194,9 +212,21 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
     if(interval == intervals.MONTH):
         rrule_param = MONTHLY
         # have to do a different formulation for monthly - to handle recurrence on e.g. the 31st of the month
-        # interval_end_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=(day_before + timedelta(days=-1)), until=(end_date + timedelta(days=31)), bysetpos=1, bymonthday=(begin_date.day, -2)))
-        interval_begin_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=begin_date, until=end_date, bysetpos=1, bymonthday=(begin_date.day, -1)))
-        interval_end_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=day_before, bysetpos=1, bymonthday=(day_before.day, -2), count=(len(interval_begin_dates) + 1)))
+        if(begin_date.day > 28): # TODO test with 29th where February is not included @test
+            last_day = last_day_of_month(begin_date)
+            offset_from_last_day = ((last_day - begin_date).days + 1) * -1 # multiply by negative 1 to tell rrule to go backwards from the last day; add one because -1 means use the last day
+
+            print day_before
+
+            interval_begin_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=begin_date, until=end_date, bysetpos=1, bymonthday=(begin_date.day, offset_from_last_day)))
+            interval_end_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=day_before, bysetpos=1, bymonthday=(day_before.day, offset_from_last_day - 1), count=(len(interval_begin_dates) + 1)))
+        elif(begin_date.day == 1): # day_before day depends on month
+            interval_begin_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=begin_date, until=end_date))
+            interval_end_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=day_before, bysetpos=1, bymonthday=(day_before.day, -1), count=(len(interval_begin_dates) + 1)))
+        else:
+            interval_begin_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=begin_date, until=end_date))
+            interval_end_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=day_before, count=(len(interval_begin_dates) + 1)))
+
 
     elif(rrule_param is None):
         # interval not in supported intervals
@@ -204,6 +234,7 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
     else:
         # TODO confirm that 'until' is inclusive
         # TODO this is only if not is_fixed
+
         interval_begin_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=begin_date, until=end_date))
         interval_end_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=day_before, count=(len(interval_begin_dates) + 1)))
 
@@ -219,7 +250,8 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
         else:
             new_interval.end_date = end_date # overall end date
 
-            # print "(" + str(new_interval.end_date) + ", " + str(interval_end_dates[next_interval_i]) + ")"
+            print "(" + str(new_interval.end_date) + ", " + str(interval_end_dates[next_interval_i]) + ") -- " + str(new_interval.end_date != interval_end_dates[next_interval_i])
+            print interval_end_dates
             new_interval.is_partial = (new_interval.end_date != interval_end_dates[next_interval_i])
             """
             if(len(return_results) == 0):
