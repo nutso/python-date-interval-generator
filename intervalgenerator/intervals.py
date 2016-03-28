@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 
 from datetime import date, datetime, timedelta
 import time
+import math
 
 # TODO placeholder so we can prepare to localize strings until we actually localize strings
 # ref: https://docs.python.org/2/library/gettext.html
@@ -194,14 +195,23 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
         # no need to worry about is_fixed - handled the same regardless
 
     if(interval == intervals.PART):
+        if(interval_count == 1):
+            # just return the original date range
+            new_interval = IntervalResult()
+            new_interval.begin_date = begin_date
+            new_interval.end_date = end_date
+            new_interval.is_partial = False
+            return [new_interval]
+
         # have to calculate the length of each part
         # TODO make sure that time parts are ignored in the comparison for total days
-        total_days = (overall_interval.end_date - overall_interval.begin_date).days
-        new_interval_count = total_days * 1.0 / interval_count
+        total_days = (overall_interval.end_date - overall_interval.begin_date).days + 1
+        new_interval_count = int(math.floor(total_days * 1.0 / interval_count))
+        print new_interval_count
         if(new_interval_count >= 1): # no partial days
             # convert it into a DAILY rrule
             rrule_param = DAILY
-            interval_count = int(new_interval_count) # TODO make sure it rounds down ... floor maybe?
+            interval_count = new_interval_count
 
         # no need to worry about is_fixed - handled the same regardless
 
@@ -287,6 +297,9 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
                     my_length_days = (new_interval.end_date - new_interval.begin_date).days
                     new_interval.is_partial = (my_length_days != interval_length_days)
             """
+        if(interval == intervals.PART):
+            print "(" + str(new_interval.begin_date) + ", " + str(new_interval.end_date) + ")"
+
         return_results.append(new_interval)
 
     return return_results
