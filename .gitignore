@@ -1,1 +1,4 @@
 *.pyc
+build/
+dist/
+python_date_interval_generator.egg-info
