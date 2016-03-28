@@ -226,6 +226,34 @@ class IntervalGeneratorTest(TestCase):
         # "relative/partial/n",
         # "fixed/partial/n",
 
+        results = intervalgenerator(date(2016, 1, 4), date(2016, 1, 31), i, interval_count=2, is_fixed=True)
+        expected_results = [
+            IntervalResult(begin_date=date(2016, 1, 4), end_date=date(2016, 1, 17), is_partial=False),
+            IntervalResult(begin_date=date(2016, 1, 18), end_date=date(2016, 1, 31), is_partial=False),
+        ]
+        self.assert_for_results(results, expected_results, i, "fixed/complete/n")
+
+        results = intervalgenerator(date(2016, 1, 3), date(2016, 1, 30), i, interval_count=2, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2016, 1, 3), end_date=date(2016, 1, 16), is_partial=False),
+            IntervalResult(begin_date=date(2016, 1, 17), end_date=date(2016, 1, 30), is_partial=False),
+        ]
+        self.assert_for_results(results, expected_results, i, "relative/complete/n")
+
+        results = intervalgenerator(date(2016, 1, 3), date(2016, 1, 30), i, interval_count=2, is_fixed=True)
+        expected_results = [
+            IntervalResult(begin_date=date(2016, 1, 3), end_date=date(2016, 1, 10), is_partial=True),
+            IntervalResult(begin_date=date(2016, 1, 11), end_date=date(2016, 1, 24), is_partial=False),
+            IntervalResult(begin_date=date(2016, 1, 25), end_date=date(2016, 1, 30), is_partial=True),
+        ]
+        self.assert_for_results(results, expected_results, i, "fixed/partial/n")
+
+        results = intervalgenerator(date(2016, 1, 3), date(2016, 1, 29), i, interval_count=2, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2016, 1, 3), end_date=date(2016, 1, 16), is_partial=False),
+            IntervalResult(begin_date=date(2016, 1, 17), end_date=date(2016, 1, 29), is_partial=True),
+        ]
+        self.assert_for_results(results, expected_results, i, "relative/partial/n")
 
     def test_intervals_quarterly(self):
         """
@@ -520,4 +548,4 @@ class IntervalGeneratorTest(TestCase):
             assert (i in self.tested_combinations), str(intervals(i)) + " not tested."
 
             for e in expected_strings:
-                assert (e in self.tested_combinations[i]), e + " not tested for " + str(intervals(i))
+                assert (e in self.tested_combinations[i]), e + " not tested (or failed test) for " + str(intervals(i))

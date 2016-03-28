@@ -229,7 +229,7 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
             days_to_end_of_week = (7 - calendar.firstweekday() - begin_date.weekday()) - 1
             new_interval = IntervalResult()
             new_interval.begin_date = begin_date
-            new_interval.end_date = begin_date + relativedelta(days=(days_to_end_of_week))
+            new_interval.end_date = begin_date + relativedelta(days=(days_to_end_of_week)) + relativedelta(days=(7*(interval_count -1)))
             new_interval.is_partial = True
             return_results.append(new_interval)
             # reset begin date to beginning of next week and let 'normal' handling take over
