@@ -5,6 +5,7 @@ except ImportError:
     from enum34 import Enum
 
 from dateutil.rrule import * # TODO only what we need ...
+from dateutil.relativedelta import relativedelta
 
 from datetime import date, datetime, timedelta
 import time
@@ -219,14 +220,15 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
             # set the first interval
             new_interval = IntervalResult()
             new_interval.begin_date = begin_date
-            new_interval.end_date = last_day_of_month(begin_date)
+            new_interval.end_date = last_day_of_month(begin_date + relativedelta(months=(interval_count-1)))
             new_interval.is_partial = True
             return_results.append(new_interval)
+
             # reset begin date to beginning of next month and let 'normal' handling take over
             begin_date = new_interval.end_date + timedelta(days=1)
 
         # have to do a different formulation for monthly - to handle recurrence on e.g. the 31st of the month
-        if(begin_date.day > 28): # TODO test with 29th where February is not included @test
+        if(begin_date.day > 28):
             last_day = last_day_of_month(begin_date)
             offset_from_last_day = ((last_day - begin_date).days + 1) * -1 # multiply by negative 1 to tell rrule to go backwards from the last day; add one because -1 means use the last day
 
