@@ -193,6 +193,18 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
     if(interval == intervals.YEAR):
         rrule_param = YEARLY
 
+        if(is_fixed and (begin_date.day != 1 or begin_date.month != 1)): # TODO confirm what January is ...
+            # set the first interval
+            new_interval = IntervalResult()
+            new_interval.begin_date = begin_date
+            new_interval.end_date = date((begin_date.year + interval_count - 1), 12, 31)
+            new_interval.is_partial = True
+            return_results.append(new_interval)
+
+            # reset begin date to beginning of next year and let 'normal' handling take over
+            begin_date = new_interval.end_date + timedelta(days=1)
+
+
     if(interval == intervals.DAY):
         rrule_param = DAILY
         # no need to worry about is_fixed - handled the same regardless
