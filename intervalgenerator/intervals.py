@@ -263,11 +263,11 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
         else:
             new_interval.end_date = end_date # overall end date
 
-            # print "(" + str(new_interval.end_date) + ", " + str(interval_end_dates[next_interval_i]) + ") -- " + str(new_interval.end_date != interval_end_dates[next_interval_i])
-            # print interval_end_dates
             if(is_fixed and interval == intervals.MONTH):
                 new_interval.is_partial = (new_interval.end_date != last_day_of_month(new_interval.end_date))
             else:
+                # print "(" + str(new_interval.end_date) + ", " + str(interval_end_dates[next_interval_i]) + ") -- " + str(new_interval.end_date != interval_end_dates[next_interval_i])
+                # print interval_end_dates
                 new_interval.is_partial = (new_interval.end_date != interval_end_dates[next_interval_i])
             """
             if(len(return_results) == 0):

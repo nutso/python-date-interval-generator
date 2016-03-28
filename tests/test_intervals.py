@@ -241,9 +241,29 @@ class IntervalGeneratorTest(TestCase):
         ]
         self.assert_for_results(results, expected_results, i, "fixed/complete/n")
 
-        # "relative/complete/n",
-        # "relative/partial/n",
-        # "fixed/partial/n",
+        results = intervalgenerator(date(2015, 1, 3), date(2015, 7, 2), i, interval_count=2, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2015,1,3), end_date=date(2015,3,2), is_partial=False),
+            IntervalResult(begin_date=date(2015,3,3), end_date=date(2015,5,2), is_partial=False),
+            IntervalResult(begin_date=date(2015,5,3), end_date=date(2015,7,2), is_partial=False),
+        ]
+        self.assert_for_results(results, expected_results, i, "relative/complete/n")
+
+        results = intervalgenerator(date(2015, 1, 3), date(2015, 6, 15), i, interval_count=2, is_fixed=True)
+        expected_results = [
+            IntervalResult(begin_date=date(2015,1,3), end_date=date(2015,2,28), is_partial=True),
+            IntervalResult(begin_date=date(2015,3,1), end_date=date(2015,4,30), is_partial=False),
+            IntervalResult(begin_date=date(2015,5,1), end_date=date(2015,6,15), is_partial=True),
+        ]
+        self.assert_for_results(results, expected_results, i, "fixed/partial/n")
+
+        results = intervalgenerator(date(2015, 1, 3), date(2015, 6, 1), i, interval_count=2, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2015,1,3), end_date=date(2015,3,2), is_partial=False),
+            IntervalResult(begin_date=date(2015,3,3), end_date=date(2015,5,2), is_partial=False),
+            IntervalResult(begin_date=date(2015,5,3), end_date=date(2015,6,1), is_partial=True),
+        ]
+        self.assert_for_results(results, expected_results, i, "relative/partial/n")
 
 
     def test_intervals_daily(self):
