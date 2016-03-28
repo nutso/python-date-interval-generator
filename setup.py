@@ -14,18 +14,19 @@ if sys.version_info < (3,4):
     install_requires = ['enum34']
 
 # http://stackoverflow.com/a/26737672/877069
-try:
-    import pypandoc
-    long_description = pypandoc.convert('README.md', 'rst')
-except(IOError, ImportError):
-    long_description = open('README.md').read()
+#try:
+#    import pypandoc
+#    long_description = pypandoc.convert('README.md', 'rst')
+#except(IOError, ImportError):
+long_description = open('README.txt').read()
 
 setup(
     name='python-date-interval-generator',
-    version='0.0.dev1',
+    version='0.0.1',
     description='Generates common sequential date intervals for a given date range',
     # long_description=long_description, # TODO does this come 'magically'?
     author='@nutso',
+    author_email='nutsoapps@gmail.com',
     url='https://github.com/nutso/python-date-interval-generator',
     # TODO license
     classifiers=[
