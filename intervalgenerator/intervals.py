@@ -193,7 +193,7 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
     if(interval == intervals.YEAR):
         rrule_param = YEARLY
 
-        if(is_fixed and (begin_date.day != 1 or begin_date.month != 1)): # TODO confirm what January is ...
+        if(is_fixed and (begin_date.day != 1 or begin_date.month != 1)):
             # set the first interval
             new_interval = IntervalResult()
             new_interval.begin_date = begin_date
@@ -279,9 +279,6 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
         # interval not in supported intervals
         raise NotImplementedError
     else:
-        # TODO confirm that 'until' is inclusive
-        # TODO this is only if not is_fixed
-
         interval_begin_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=begin_date, until=end_date))
         interval_end_dates = list(rrule(rrule_param, cache=False, interval=interval_count, dtstart=day_before, count=(len(interval_begin_dates) + 1)))
 
@@ -313,24 +310,6 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
                 # print "(" + str(new_interval.end_date) + ", " + str(interval_end_dates[next_interval_i]) + ") -- " + str(new_interval.end_date != interval_end_dates[next_interval_i])
                 # print interval_end_dates
                 new_interval.is_partial = (new_interval.end_date != interval_end_dates[next_interval_i])
-            """
-            if(len(return_results) == 0):
-                # this will be the first and only
-                # it's not partial because it's the entire date range requested
-                new_interval.is_partial = False
-            else:
-                if(interval == intervals.MONTH):
-                    # TODO this doesn't take into account e.g. 30th of Jan
-                    # months have varying length in days
-                    new_interval.is_partial = (return_results[-1].end_date.day != new_interval.end_date.day)
-
-                else:
-                    # TODO handle leap year...
-                    # get length of most recent result
-                    interval_length_days = (return_results[-1].end_date - return_results[-1].begin_date).days
-                    my_length_days = (new_interval.end_date - new_interval.begin_date).days
-                    new_interval.is_partial = (my_length_days != interval_length_days)
-            """
 
         return_results.append(new_interval)
 
