@@ -10,6 +10,7 @@ from dateutil.relativedelta import relativedelta
 from datetime import date, datetime, timedelta
 import time
 import math
+import calendar
 
 # TODO placeholder so we can prepare to localize strings until we actually localize strings
 # ref: https://docs.python.org/2/library/gettext.html
@@ -160,6 +161,7 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
         If a datetime is provided, only the date portion will be used.
     interval intervalgenerator.intervals
         Duration that each time interval should span.
+        Note that WEEK uses the current calendar.firstweekday setting, which defaults to 0 (Monday) for fixed weekly increments.
         If an invalid or unsupported interval is provided, @raise NotImplementedError
     interval_count int, optional
         Number of intervals to include in each IntervalResult, e.g. 2 --> a 2-year span if interval is intervals.YEAR.
@@ -222,7 +224,16 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
 
     if(interval == intervals.WEEK):
         rrule_param = WEEKLY
-        # TODO need to know whether weekly starts on Sunday or Monday
+        if(is_fixed and begin_date.weekday() != calendar.firstweekday()):
+            # set the first interval
+            days_to_end_of_week = (7 - calendar.firstweekday() - begin_date.weekday()) - 1
+            new_interval = IntervalResult()
+            new_interval.begin_date = begin_date
+            new_interval.end_date = begin_date + relativedelta(days=(days_to_end_of_week))
+            new_interval.is_partial = True
+            return_results.append(new_interval)
+            # reset begin date to beginning of next week and let 'normal' handling take over
+            begin_date = new_interval.end_date + timedelta(days=1)
 
     if(interval == intervals.MONTH):
         rrule_param = MONTHLY
@@ -281,8 +292,11 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
                     new_interval.end_date != datetime(new_interval.end_date.year, 6, 30) and
                     new_interval.end_date != datetime(new_interval.end_date.year, 9, 30) and
                     new_interval.end_date != datetime(new_interval.end_date.year, 12, 31)):
-                    
+
                     new_interval.is_partial = True
+            elif(is_fixed and interval == intervals.WEEK):
+                new_interval.is_partial = (new_interval.end_date.weekday() != 6)
+
             else:
                 # print "(" + str(new_interval.end_date) + ", " + str(interval_end_dates[next_interval_i]) + ") -- " + str(new_interval.end_date != interval_end_dates[next_interval_i])
                 # print interval_end_dates
