@@ -207,7 +207,6 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
         # TODO make sure that time parts are ignored in the comparison for total days
         total_days = (overall_interval.end_date - overall_interval.begin_date).days + 1
         new_interval_count = int(math.floor(total_days * 1.0 / interval_count))
-        print new_interval_count
         if(new_interval_count >= 1): # no partial days
             # convert it into a DAILY rrule
             rrule_param = DAILY
@@ -215,10 +214,10 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
 
         # no need to worry about is_fixed - handled the same regardless
 
-    if(interval == intervals.QUARTER):
+    if(interval == intervals.QUARTER): # this check must come before the MONTH check
         # convert it into months
-        rrule_param = DAILY
         interval_count = interval_count * 3
+        interval = intervals.MONTH
 
     if(interval == intervals.WEEK):
         rrule_param = WEEKLY
@@ -297,8 +296,6 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
                     my_length_days = (new_interval.end_date - new_interval.begin_date).days
                     new_interval.is_partial = (my_length_days != interval_length_days)
             """
-        if(interval == intervals.PART):
-            print "(" + str(new_interval.begin_date) + ", " + str(new_interval.end_date) + ")"
 
         return_results.append(new_interval)
 

@@ -175,6 +175,38 @@ class IntervalGeneratorTest(TestCase):
         # "relative/partial/n",
         # "fixed/partial/n",
 
+    def test_intervals_quarterly(self):
+        """
+        Testing intervalgenerator for various intervals.PART configurations.
+        """
+        i = intervals.QUARTER
+
+        results = intervalgenerator(date(2015, 1, 1), date(2015, 12, 31), i, is_fixed=True)
+        expected_results = [
+            IntervalResult(begin_date=date(2015, 1, 1), end_date=date(2015, 3, 31), is_partial=False),
+            IntervalResult(begin_date=date(2015, 4, 1), end_date=date(2015, 6, 30), is_partial=False),
+            IntervalResult(begin_date=date(2015, 7, 1), end_date=date(2015, 9, 30), is_partial=False),
+            IntervalResult(begin_date=date(2015, 10, 1), end_date=date(2015, 12, 31), is_partial=False),
+        ]
+        self.assert_for_results(results, expected_results, i, "fixed/complete/1")
+
+        results = intervalgenerator(date(2015, 1, 2), date(2016, 1, 1), i, is_fixed=False)
+        expected_results = [
+            IntervalResult(begin_date=date(2015, 1, 2), end_date=date(2015, 4, 1), is_partial=False),
+            IntervalResult(begin_date=date(2015, 4, 2), end_date=date(2015, 7, 1), is_partial=False),
+            IntervalResult(begin_date=date(2015, 7, 2), end_date=date(2015, 10, 1), is_partial=False),
+            IntervalResult(begin_date=date(2015, 10, 2), end_date=date(2016, 1, 1), is_partial=False),
+        ]
+        self.assert_for_results(results, expected_results, i, "relative/complete/1")
+
+        # "relative/partial/1",
+        # "fixed/partial/1",
+        # "relative/complete/n",
+        # "fixed/complete/n",
+        # "relative/partial/n",
+        # "fixed/partial/n",
+
+
     def test_intervals_partials(self):
         """
         Testing intervalgenerator for various intervals.PART configurations.
