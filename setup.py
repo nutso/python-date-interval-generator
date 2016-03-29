@@ -8,7 +8,7 @@ import sys
 here = path.abspath(path.dirname(__file__))
 
 # Python version-independent
-install_requires = ['dateutil']
+install_requires = ['python-dateutil']
 
 if sys.version_info < (3,4):
     install_requires = ['enum34']
@@ -22,9 +22,9 @@ long_description = open('README.txt').read()
 
 setup(
     name='python-date-interval-generator',
-    version='0.0.1',
+    version='0.0.2',
     description='Generates common sequential date intervals for a given date range',
-    # long_description=long_description, # TODO does this come 'magically'?
+    long_description=long_description,
     author='@nutso',
     author_email='nutsoapps@gmail.com',
     url='https://github.com/nutso/python-date-interval-generator',
@@ -38,8 +38,8 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     install_requires=install_requires,
     extras_require={
-        'dev': [], # TODO
-        'test': [], # TODO
+        'dev': [],
+        'test': [],
     },
     test_suite="tests",
 )

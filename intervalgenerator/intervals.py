@@ -105,7 +105,7 @@ class IntervalResult(dict):
         Set the interval begin date to either a date or a datetime.
         """
         if(not isinstance(begin_date, (date, datetime, type(None)))):
-            raise TypeError(_("begin_date must be of type date or datetime"))
+            raise TypeError(_("begin_date must be of type date or datetime. Provided type is " + str(type(begin_date))))
         self.set_date_range(begin_date, self.end_date)
 
     @property
@@ -118,7 +118,7 @@ class IntervalResult(dict):
     @end_date.setter
     def end_date(self, end_date):
         if(not isinstance(end_date, (date, datetime, type(None)))):
-            raise TypeError(_("end_date must be of type date or datetime"))
+            raise TypeError(_("end_date must be of type date or datetime. Provided type is " + str(type(end_date))))
         self.set_date_range(self.begin_date, end_date)
     @property
     def is_partial(self):
@@ -126,7 +126,7 @@ class IntervalResult(dict):
     @is_partial.setter
     def is_partial(self, is_partial):
         if(not isinstance(is_partial, (bool, type(None)))):
-            raise TypeError(_("is_partial must be of type bool"))
+            raise TypeError(_("is_partial must be of type bool. Provided type is " + str(type(is_partial))))
         self['is_partial'] = is_partial
 
 def last_day_of_month(any_day):

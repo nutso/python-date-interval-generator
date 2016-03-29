@@ -42,6 +42,11 @@ def intervalgenerator(begin_date, end_date, interval, interval_count=1, is_fixed
 
 ## Release Notes
 
+### 0.0.2
+
+* Correctly importing python-dateutil rather than dateutil as part of installation
+* More informative TypeError messages for IntervalResult
+
 ### 0.0.1
 
 * Initial release
